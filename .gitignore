@@ -1,0 +1,9 @@
+# Arquivos gerados pelo RStudio/Posit Cloud
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# Arquivos temporários do sistema
+.DS_Store
+Thumbs.db
