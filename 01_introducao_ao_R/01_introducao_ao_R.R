@@ -12,7 +12,7 @@
 #    Cmd+Enter (Mac).
 # 2. Leia os comentários (linhas que começam com #) antes de rodar o
 #    código: eles explicam o que a linha seguinte faz e por quê.
-# 3. Use o painel "Outline" do RStudio/Posit Cloud (ícone de lista no
+# 3. Use o painel "Outline" do Posit Cloud (ícone de lista no
 #    canto superior direito do editor) para navegar entre as seções -
 #    todas as seções abaixo terminam em "----" e aparecem no índice.
 # 4. Ao final do tutorial há uma seção "EXERCÍCIOS PRÁTICOS". É lá que
@@ -27,6 +27,19 @@
 # expandido para a disciplina Economia no Quarto.
 #
 # =============================================================================
+
+
+# 0. Fonte / Material de referência ----------------------------------------
+#
+# Este tutorial é uma adaptação, com fins didáticos, do script original
+# "Introdução ao R" do curso do NEDUR (Núcleo de Estudos em
+# Desenvolvimento Urbano e Regional) da UFPR:
+#
+#   https://github.com/davicatelan/introducao-R-nedur-ufpr/blob/main/intro-R.R
+#
+# Autores do material original: Prof. Vinicius A. Vale, Tania M.
+# Alberti e Davi W. Catelan. Consulte o repositório acima para o
+# script original e outros materiais do curso.
 
 
 # 1. O que são R e RStudio/Posit Cloud? ----------------------------------

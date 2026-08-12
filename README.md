@@ -54,4 +54,5 @@ O primeiro tutorial (`01_introducao_ao_R`) foi adaptado, com fins
 didáticos, a partir do material *"Introdução ao R"* do NEDUR/UFPR
 (Prof. Vinicius A. Vale, Tania M. Alberti e Davi W. Catelan —
 [nedur.ufpr.br/cursos](http://nedur.ufpr.br/cursos/)), reorganizado e
-expandido para esta disciplina.
+expandido para esta disciplina. Script original disponível em:
+[github.com/davicatelan/introducao-R-nedur-ufpr](https://github.com/davicatelan/introducao-R-nedur-ufpr/blob/main/intro-R.R).
