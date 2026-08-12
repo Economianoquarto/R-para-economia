@@ -1,7 +1,7 @@
 # =============================================================================
 # TUTORIAL 01 - INTRODUÇÃO AO R
 # Curso: Economia no Quarto - Ciência de Dados para Economia
-# Professor(a): [SEU NOME AQUI] | economianoquarto@gmail.com
+# Professor(a): Caio Lopes | economianoquarto@gmail.com
 # =============================================================================
 #
 # COMO USAR ESTE SCRIPT
@@ -101,8 +101,8 @@ library(wooldridge)
 # Toda função do R tem uma página de ajuda. Use "?" antes do nome da
 # função (ou do pacote) para abrir a documentação no painel "Help":
 
-?sum
-?mean
+?"sum"
+?"mean"
 
 # example() roda os exemplos que estão na própria documentação:
 example(sum)
@@ -111,7 +111,7 @@ example(sum)
 # 5. Operadores básicos ---------------------------------------------------
 
 ## 5.1 Operadores aritméticos ----
-?Arithmetic
+?"Arithmetic"
 2 + 2   # soma
 4 - 2   # subtração
 3 * 2   # multiplicação
@@ -123,7 +123,7 @@ example(sum)
 ## 5.2 Operadores lógicos ----
 #
 # Comparações sempre retornam TRUE (verdadeiro) ou FALSE (falso).
-?Logic
+?"Logic"
 5 == 5  # é igual a?
 5 == 4
 5 >  4  # é maior que?
@@ -303,7 +303,7 @@ rm(list = ls())
 
 data("wage1")
 str(wage1)     # estrutura da base: variáveis, tipos, primeiras linhas
-?wage1         # descrição de cada variável (documentação da base)
+?"wage1"       # descrição de cada variável (documentação da base)
 
 wage1tib <- as_tibble(wage1)
 wage1tib
