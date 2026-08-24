@@ -9,6 +9,7 @@ Economia. Cada pasta numerada é um tutorial independente, com um script
 | # | Pasta | Conteúdo |
 |---|-------|----------|
 | 01 | [`01_introducao_ao_R/`](01_introducao_ao_R/01_introducao_ao_R.R) | R e RStudio/Posit Cloud, pacotes, operadores, vetores, matrizes, data frames/tibbles, dplyr e pipe, importação/exportação de dados, gráficos com ggplot2 |
+| 02 | [`02_geobr/`](02_geobr/02_geobr.R) | Dados espaciais oficiais do Brasil com geobr, objetos sf, estados, municípios, sedes municipais, escolas, mapas temáticos, agregações e joins geográficos |
 
 Novos tutoriais serão adicionados a este repositório ao longo do curso.
 
@@ -37,8 +38,9 @@ Depois de responder aos exercícios, **não é necessário enviar nada por
 e-mail ou baixar arquivos** — compartilhe o projeto comigo direto pelo
 Posit Cloud:
 
-1. Renomeie o projeto para `SeuNome_SeuSobrenome - Tutorial 01` (clique
-   no nome do projeto, no canto superior esquerdo da tela).
+1. Renomeie o projeto para `SeuNome_SeuSobrenome - Tutorial XX`, trocando
+   `XX` pelo número do tutorial resolvido (clique no nome do projeto, no
+   canto superior esquerdo da tela).
 2. Salve o script (`Ctrl+S`).
 3. Clique em **Share**, no canto superior direito da tela do projeto.
 4. Convide o e-mail **economianoquarto@gmail.com** como colaborador
