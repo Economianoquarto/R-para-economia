@@ -1,5 +1,5 @@
 # =============================================================================
-# TUTORIAL 02 - DADOS ESPACIAIS DO BRASIL COM O PACOTE GEOBR
+# TUTORIAL 03 - DADOS ESPACIAIS DO BRASIL COM O PACOTE GEOBR
 # Curso: Economia no Quarto - Ciência de Dados para Economia
 # Professor(a): Caio Lopes | economianoquarto@gmail.com
 # =============================================================================

@@ -9,7 +9,8 @@ Economia. Cada pasta numerada é um tutorial independente, com um script
 | # | Pasta | Conteúdo |
 |---|-------|----------|
 | 01 | [`01_introducao_ao_R/`](01_introducao_ao_R/01_introducao_ao_R.R) | R e RStudio/Posit Cloud, pacotes, operadores, vetores, matrizes, data frames/tibbles, dplyr e pipe, importação/exportação de dados, gráficos com ggplot2 |
-| 02 | [`02_geobr/`](02_geobr/02_geobr.R) | Dados espaciais oficiais do Brasil com geobr, objetos sf, estados, municípios, sedes municipais, escolas, mapas temáticos, agregações e joins geográficos |
+| 02 | [`02_sidra/`](02_sidra/02_sidra.R) | Dados do SIDRA/IBGE com o pacote sidrar, consulta e metadados de tabelas, seleção e renomeação de colunas, verificação de duplicatas e valores ausentes, estatísticas descritivas, rankings e filtros com dplyr |
+| 03 | [`03_geobr/`](03_geobr/03_geobr.R) | Dados espaciais oficiais do Brasil com geobr, objetos sf, estados, municípios, sedes municipais, escolas, mapas temáticos, agregações e joins geográficos |
 
 Novos tutoriais serão adicionados a este repositório ao longo do curso.
 
