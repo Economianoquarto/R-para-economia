@@ -14,6 +14,15 @@ Economia. Cada pasta numerada é um tutorial independente, com um script
 
 Novos tutoriais serão adicionados a este repositório ao longo do curso.
 
+## Antes de começar: instalação
+
+Quem for rodar os tutoriais no próprio computador precisa instalar R,
+RStudio e Git. O passo a passo está em
+[`tutorial_instalacao_r_posit_git.pdf`](tutorial_instalacao_r_posit_git.pdf).
+
+Quem for usar o Posit Cloud não precisa instalar nada: siga direto para
+a seção abaixo.
+
 ## Como abrir um tutorial no Posit Cloud (passo a passo para alunos)
 
 1. Crie uma conta gratuita em [posit.cloud](https://posit.cloud) (se
