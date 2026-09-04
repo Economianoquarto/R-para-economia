@@ -1,5 +1,5 @@
 # =============================================================================
-# TUTORIAL 03 - DADOS ESPACIAIS DO BRASIL COM O PACOTE GEOBR
+# TUTORIAL 04 - DADOS ESPACIAIS DO BRASIL COM O PACOTE GEOBR
 # Curso: Economia no Quarto - Ciência de Dados para Economia
 # Professor(a): Caio Lopes | economianoquarto@gmail.com
 # =============================================================================
@@ -795,7 +795,7 @@ mapa_escolas_curitiba
 #
 # 1. Renomeie o projeto (canto superior esquerdo, ao lado do logo do
 #    Posit Cloud, clique no nome do projeto) para:
-#       SeuNome_SeuSobrenome - Tutorial 02
+#       SeuNome_SeuSobrenome - Tutorial 04
 #
 # 2. Salve o script (Ctrl+S / Cmd+S).
 #

@@ -7,3 +7,15 @@
 # Arquivos temporários do sistema
 .DS_Store
 Thumbs.db
+
+# Arquivos gerados ao rodar os tutoriais (os dados de entrada ficam versionados)
+Rplots.pdf
+01_introducao_ao_R/resumo_wage_educacao.csv
+01_introducao_ao_R/resumo_wage_educacao.rds
+resumo_wage_educacao.csv
+resumo_wage_educacao.rds
+03_importar_exportar/postos_teresina_limpo.xlsx
+03_importar_exportar/postos_teresina_limpo.rds
+03_importar_exportar/estatisticas_postos_teresina.xlsx
+03_importar_exportar/resumo_por_produto.csv
+03_importar_exportar/exercicio_*.xlsx

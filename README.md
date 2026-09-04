@@ -10,7 +10,8 @@ Economia. Cada pasta numerada é um tutorial independente, com um script
 |---|-------|----------|
 | 01 | [`01_introducao_ao_R/`](01_introducao_ao_R/01_introducao_ao_R.R) | R e RStudio/Posit Cloud, pacotes, operadores, vetores, matrizes, data frames/tibbles, dplyr e pipe, importação/exportação de dados, gráficos com ggplot2 |
 | 02 | [`02_sidra/`](02_sidra/02_sidra.R) | Dados do SIDRA/IBGE com o pacote sidrar, consulta e metadados de tabelas, seleção e renomeação de colunas, verificação de duplicatas e valores ausentes, estatísticas descritivas, rankings e filtros com dplyr |
-| 03 | [`03_geobr/`](03_geobr/03_geobr.R) | Dados espaciais oficiais do Brasil com geobr, objetos sf, estados, municípios, sedes municipais, escolas, mapas temáticos, agregações e joins geográficos |
+| 03 | [`03_importar_exportar/`](03_importar_exportar/03_importar_exportar.R) | Diretório de trabalho e caminhos relativos, leitura de CSV com separador `;` e decimal com vírgula, encoding e tipos de coluna, unidade de observação, verificação de chave e de valores ausentes, leitura e escrita de Excel com readxl/writexl, estatísticas descritivas e exportação em várias abas |
+| 04 | [`04_geobr/`](04_geobr/04_geobr.R) | Dados espaciais oficiais do Brasil com geobr, objetos sf, estados, municípios, sedes municipais, escolas, mapas temáticos, agregações e joins geográficos |
 
 Novos tutoriais serão adicionados a este repositório ao longo do curso.
 
@@ -59,6 +60,16 @@ Posit Cloud:
 
 Essas instruções também estão repetidas ao final de cada script de
 tutorial.
+
+## Fontes dos dados
+
+O tutorial `03_importar_exportar` usa a Série Histórica de Preços de
+Combustíveis da [ANP](https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos),
+referente ao 1º semestre de 2026. O arquivo original cobre o Brasil inteiro
+(422.418 linhas, 72 MB); o que está no repositório é o recorte do município
+de Teresina/PI (2.308 linhas), mantido no formato original da ANP — separador
+`;`, decimal com vírgula e datas em `dd/mm/aaaa` —, que é justamente o que o
+tutorial ensina a importar.
 
 ## Créditos
 
