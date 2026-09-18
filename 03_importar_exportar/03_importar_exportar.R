@@ -191,8 +191,24 @@ problems(postos_bruto)
 
 # Duas coisas para observar no glimpse():
 #
-# 1. "Valor de Venda" veio como <dbl> (número). Foi o decimal_mark = ","
-#    que fez isso. Sem ele, viria como texto e nenhuma média funcionaria.
+# 1. "Valor de Venda" veio como <dbl> (número), e com o valor CERTO. Quem
+#    fez isso foi o decimal_mark = ",".
+#
+#    Cuidado com o que acontece sem ele, porque não é o que se espera. O
+#    readr não desiste nem devolve texto: ele usa a convenção internacional,
+#    em que a vírgula é separador de MILHAR. Então lê "5,89" como 589.
+#    A coluna vem como número, problems() fica vazio, nenhum aviso aparece -
+#    e todos os preços ficam 100 vezes maiores. Rode para ver:
+teste_sem_decimal <- read_delim(caminho_csv, delim = ";")
+
+class(teste_sem_decimal$`Valor de Venda`)      # "numeric": parece certo
+summary(teste_sem_decimal$`Valor de Venda`)    # de 434 a 819 o litro (!)
+summary(postos_bruto$`Valor de Venda`)         # o correto: de 4,34 a 8,19
+
+#    Guarde a lição: conferir o TIPO da coluna não basta. Um erro de leitura
+#    pode devolver o tipo certo e o valor errado, sem nenhuma mensagem. Por
+#    isso a conferência depois de importar tem de olhar os VALORES também -
+#    um summary() ou um head() resolvem em dois segundos.
 #
 # 2. "Data da Coleta" veio como <chr> (texto), não como data. O readr só
 #    reconhece datas sozinho no formato internacional (aaaa-mm-dd). Como o
@@ -653,8 +669,15 @@ readLines("03_importar_exportar/resumo_por_produto.csv", n = 3)
 #    Separador errado. Veja readLines(arquivo, n = 3) e use read_delim()
 #    com o delim correto (";" no padrão brasileiro).
 #
-# 3. A coluna de valor veio como texto (<chr>) e a média não funciona
+# 3. A coluna de valor está com os números errados, ou veio como texto
 #    Decimal com vírgula. Acrescente locale(decimal_mark = ",").
+#
+#    Os dois sintomas vêm da mesma causa. Se a coluna tiver só dígitos e
+#    vírgula ("5,89"), o readr lê a vírgula como separador de milhar e
+#    devolve 589 - número certo em tipo, errado em valor, e sem nenhum
+#    aviso. Se tiver qualquer outro caractere junto ("R$ 5,89"), aí sim ela
+#    vem como <chr>. O primeiro caso é o perigoso: confira com summary() se
+#    a ordem de grandeza faz sentido, e não só com class().
 #
 # 4. Os acentos vieram trocados (Ã‡, Ã£, SABBÃ)
 #    Encoding errado. Tente locale(encoding = "UTF-8") ou, em arquivos mais
