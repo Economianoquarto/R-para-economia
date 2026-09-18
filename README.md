@@ -11,9 +11,18 @@ Economia. Cada pasta numerada é um tutorial independente, com um script
 | 01 | [`01_introducao_ao_R/`](01_introducao_ao_R/01_introducao_ao_R.R) | R e RStudio/Posit Cloud, pacotes, operadores, vetores, matrizes, data frames/tibbles, dplyr e pipe, importação/exportação de dados, gráficos com ggplot2 |
 | 02 | [`02_sidra/`](02_sidra/02_sidra.R) | Dados do SIDRA/IBGE com o pacote sidrar, consulta e metadados de tabelas, seleção e renomeação de colunas, verificação de duplicatas e valores ausentes, estatísticas descritivas, rankings e filtros com dplyr |
 | 03 | [`03_importar_exportar/`](03_importar_exportar/03_importar_exportar.R) | Diretório de trabalho e caminhos relativos, leitura de CSV com separador `;` e decimal com vírgula, encoding e tipos de coluna, unidade de observação, verificação de chave e de valores ausentes, leitura e escrita de Excel com readxl/writexl, estatísticas descritivas e exportação em várias abas |
-| 04 | [`04_geobr/`](04_geobr/04_geobr.R) | Dados espaciais oficiais do Brasil com geobr, objetos sf, estados, municípios, sedes municipais, escolas, mapas temáticos, agregações e joins geográficos |
+| 04 | [`04_pivot/`](04_pivot/04_pivot.R) | Identificação da semana (domingo a sábado) com `floor_date()`, formato comprido e formato largo, construção de um painel posto × semana com `pivot_wider()`, colunas-lista e colunas que quebram o painel em silêncio, conferência da chave unidade × tempo, `NA` de painel desbalanceado, volta ao formato comprido com `pivot_longer()` e variação de preço com `lag()` |
 
 Novos tutoriais serão adicionados a este repositório ao longo do curso.
+
+### Material extra
+
+| Pasta | Conteúdo |
+|-------|----------|
+| [`geobr/`](geobr/geobr.R) | Dados espaciais oficiais do Brasil com geobr, objetos sf, estados, municípios, sedes municipais, escolas, mapas temáticos, agregações e joins geográficos |
+
+Este material não faz parte da sequência numerada do curso e pode ser feito
+a qualquer momento depois do tutorial 03.
 
 ## Antes de começar: instalação
 
@@ -70,6 +79,10 @@ referente ao 1º semestre de 2026. O arquivo original cobre o Brasil inteiro
 de Teresina/PI (2.308 linhas), mantido no formato original da ANP — separador
 `;`, decimal com vírgula e datas em `dd/mm/aaaa` —, que é justamente o que o
 tutorial ensina a importar.
+
+O tutorial `04_pivot` usa essa mesma planilha, sem nenhuma alteração. Ela
+está repetida na pasta dele para que o tutorial rode sozinho, sem depender de
+outra pasta do projeto.
 
 ## Créditos
 

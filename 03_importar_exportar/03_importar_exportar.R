@@ -95,7 +95,7 @@ getwd()
 list.files()
 
 # Você deve ver as pastas dos tutoriais: 01_introducao_ao_R, 02_sidra,
-# 03_importar_exportar, 04_geobr.
+# 03_importar_exportar, 04_pivot e geobr.
 #
 # Para olhar dentro de uma pasta específica:
 list.files("03_importar_exportar")
