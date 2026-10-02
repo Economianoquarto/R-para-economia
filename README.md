@@ -12,17 +12,9 @@ Economia. Cada pasta numerada é um tutorial independente, com um script
 | 02 | [`02_sidra/`](02_sidra/02_sidra.R) | Dados do SIDRA/IBGE com o pacote sidrar, consulta e metadados de tabelas, seleção e renomeação de colunas, verificação de duplicatas e valores ausentes, estatísticas descritivas, rankings e filtros com dplyr |
 | 03 | [`03_importar_exportar/`](03_importar_exportar/03_importar_exportar.R) | Diretório de trabalho e caminhos relativos, leitura de CSV com separador `;` e decimal com vírgula, encoding e tipos de coluna, unidade de observação, verificação de chave e de valores ausentes, leitura e escrita de Excel com readxl/writexl, estatísticas descritivas e exportação em várias abas |
 | 04 | [`04_pivot/`](04_pivot/04_pivot.R) | Formato comprido e formato largo com duas bases pequenas simuladas, de comprido para largo com `pivot_wider()`, de largo para comprido com `pivot_longer()`, `names_prefix`, ano que volta como texto, mudança da unidade de observação e conferência da chave e dos valores depois de cada giro |
+| 05 | [`05_geobr/`](05_geobr/05_geobr.R) | Dados espaciais oficiais do Brasil com `read_state()`, `read_municipality()` e `read_schools()` do geobr, objetos sf, mapas de polígonos e de pontos com `geom_sf()`, escolas em atividade e contagem de escolas por município |
 
 Novos tutoriais serão adicionados a este repositório ao longo do curso.
-
-### Material extra
-
-| Pasta | Conteúdo |
-|-------|----------|
-| [`geobr/`](geobr/geobr.R) | Dados espaciais oficiais do Brasil com geobr, objetos sf, estados, municípios, sedes municipais, escolas, mapas temáticos, agregações e joins geográficos |
-
-Este material não faz parte da sequência numerada do curso e pode ser feito
-a qualquer momento depois do tutorial 03.
 
 ## Antes de começar: instalação
 
