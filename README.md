@@ -11,7 +11,7 @@ Economia. Cada pasta numerada é um tutorial independente, com um script
 | 01 | [`01_introducao_ao_R/`](01_introducao_ao_R/01_introducao_ao_R.R) | R e RStudio/Posit Cloud, pacotes, operadores, vetores, matrizes, data frames/tibbles, dplyr e pipe, importação/exportação de dados, gráficos com ggplot2 |
 | 02 | [`02_sidra/`](02_sidra/02_sidra.R) | Dados do SIDRA/IBGE com o pacote sidrar, consulta e metadados de tabelas, seleção e renomeação de colunas, verificação de duplicatas e valores ausentes, estatísticas descritivas, rankings e filtros com dplyr |
 | 03 | [`03_importar_exportar/`](03_importar_exportar/03_importar_exportar.R) | Diretório de trabalho e caminhos relativos, leitura de CSV com separador `;` e decimal com vírgula, encoding e tipos de coluna, unidade de observação, verificação de chave e de valores ausentes, leitura e escrita de Excel com readxl/writexl, estatísticas descritivas e exportação em várias abas |
-| 04 | [`04_pivot/`](04_pivot/04_pivot.R) | Identificação da semana (domingo a sábado) com `floor_date()`, formato comprido e formato largo, construção de um painel posto × semana com `pivot_wider()`, colunas-lista e colunas que quebram o painel em silêncio, conferência da chave unidade × tempo, `NA` de painel desbalanceado, volta ao formato comprido com `pivot_longer()` e variação de preço com `lag()` |
+| 04 | [`04_pivot/`](04_pivot/04_pivot.R) | Formato comprido e formato largo com duas bases pequenas simuladas, de comprido para largo com `pivot_wider()`, de largo para comprido com `pivot_longer()`, `names_prefix`, ano que volta como texto, mudança da unidade de observação e conferência da chave e dos valores depois de cada giro |
 
 Novos tutoriais serão adicionados a este repositório ao longo do curso.
 
@@ -80,9 +80,8 @@ de Teresina/PI (2.308 linhas), mantido no formato original da ANP — separador
 `;`, decimal com vírgula e datas em `dd/mm/aaaa` —, que é justamente o que o
 tutorial ensina a importar.
 
-O tutorial `04_pivot` usa essa mesma planilha, sem nenhuma alteração. Ela
-está repetida na pasta dele para que o tutorial rode sozinho, sem depender de
-outra pasta do projeto.
+O tutorial `04_pivot` não usa arquivo de dados: as duas bases são simuladas
+no próprio script, com valores fictícios.
 
 ## Créditos
 

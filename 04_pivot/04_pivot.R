@@ -1,5 +1,5 @@
 # =============================================================================
-# TUTORIAL 04 - MUDANDO O FORMATO DA BASE: UM PAINEL POSTO x SEMANA
+# TUTORIAL 04 - MUDANDO O FORMATO DA BASE: pivot_wider() E pivot_longer()
 # Curso: Economia no Quarto - Ciência de Dados para Economia
 # Professor(a): Caio Lopes | economianoquarto@gmail.com
 # =============================================================================
@@ -9,47 +9,32 @@
 # 1. Execute de cima para baixo, linha a linha ou bloco a bloco, com
 #    Ctrl+Enter (Windows/Linux) ou Cmd+Enter (Mac).
 # 2. As seções terminadas em "----" aparecem no painel Outline do RStudio.
-# 3. Ao final há um exercício. Escreva a resposta no espaço indicado por
-#    "# SUA RESPOSTA AQUI".
-# 4. Este tutorial NÃO precisa de internet.
+# 3. Ao final há um exercício em duas partes. Escreva as respostas nos
+#    espaços indicados por "# SUA RESPOSTA AQUI".
+# 4. Este tutorial NÃO precisa de internet nem de nenhum arquivo de dados.
 #
 # OBJETIVOS
 # ---------
-# - identificar a que SEMANA (domingo a sábado) pertence cada data;
 # - distinguir formato COMPRIDO (long) de formato LARGO (wide);
-# - montar um PAINEL posto x semana com pivot_wider(), sem agregar nada;
-# - reconhecer as duas colunas que estragam um pivot_wider silenciosamente;
-# - conferir a chave unidade x tempo, como se faz em qualquer painel;
-# - entender por que o NA de um painel desbalanceado não é zero;
-# - voltar ao formato comprido com pivot_longer() para calcular variações.
+# - passar do formato comprido para o largo com pivot_wider();
+# - passar do formato largo para o comprido com pivot_longer();
+# - perceber que a UNIDADE DE OBSERVAÇÃO muda a cada giro, e conferir o
+#   resultado contando linhas, colunas e valores.
 #
-# O QUE VAMOS CONSTRUIR
-# ---------------------
-# Um painel de preços da gasolina comum em Teresina:
+# OS DADOS
+# --------
+# Vamos SIMULAR duas bases pequenas, digitadas aqui mesmo no script. Elas
+# são pequenas de propósito: cabem inteiras na tela, e dá para conferir a
+# olho cada valor antes e depois de girar a base.
 #
-#   uma LINHA por posto revendedor;
-#   uma COLUNA por semana do 1º semestre de 2026;
-#   em cada célula, o preço coletado naquele posto naquela semana.
+#   1. desemprego_comprido - taxa de desemprego de 3 estados em 3 anos, já
+#      no formato COMPRIDO. Vamos girá-la para o formato largo.
 #
-# Repare: o preço vai para a célula COMO FOI COLETADO. Não existe média
-# nenhuma neste tutorial - o pivot_wider() aqui só REORGANIZA os valores que
-# já estão na base, um por célula.
+#   2. receita_largo - receita de 4 empresas em 3 anos, já no formato
+#      LARGO. Vamos girá-la para o formato comprido.
 #
-# A BASE DE DADOS
-# ---------------
-# A mesma do Tutorial 03: preços de revenda de combustíveis coletados pela
-# ANP em Teresina/PI no 1º semestre de 2026.
-#
-#   Arquivo: 04_pivot/postos_teresina_2026_01.xlsx
-#   Fonte:   https://www.gov.br/anp/pt-br/centrais-de-conteudo/dados-abertos
-#
-# O arquivo está na pasta deste tutorial, para que ele rode sozinho, sem
-# depender de nenhuma outra pasta do projeto. É a mesma planilha usada no
-# Tutorial 03, sem nenhuma alteração.
-#
-# Trate esse arquivo como SOMENTE LEITURA. Todo resultado deste script sai em
-# arquivos novos; o dado bruto nunca é sobrescrito. Assim, se algo der errado
-# no meio do caminho, basta rodar o script de novo desde o início.
+# Os valores são FICTÍCIOS, inventados só para o tutorial. Não os use como
+# dado de verdade.
 # =============================================================================
 
 
@@ -58,618 +43,318 @@
 rm(list = ls())
 
 # install.packages("tidyverse")
-# install.packages("readxl")
-# install.packages("writexl")
 
-library(tidyverse)  # usaremos dplyr, tidyr, stringr e lubridate
-library(readxl)     # ler .xlsx
-library(writexl)    # gravar .xlsx
+library(tidyverse)
 
-# pivot_longer() e pivot_wider() vêm do tidyr, carregado por
-# library(tidyverse). Não é preciso chamar library(tidyr) separadamente.
-
-# O caminho é RELATIVO à raiz do projeto - a pasta que contém o arquivo
-# .Rproj -, e não à pasta onde este script está salvo. É por isso que ele
-# começa com "04_pivot/". Confira com getwd() se tiver dúvida.
-caminho_precos <- "04_pivot/postos_teresina_2026_01.xlsx"
-
-file.exists(caminho_precos)   # deve dar TRUE
+# pivot_wider() e pivot_longer() vêm do pacote tidyr, e tribble(), que usaremos
+# para digitar as bases, vem do tibble. Os dois são carregados pelo
+# library(tidyverse).
 
 
-# 2. Importando os dados ---------------------------------------------------
-
-precos_bruto <- read_excel(caminho_precos, sheet = "postos_teresina")
-
-dim(precos_bruto)   # esperado: 2308 x 16
-
-precos <- precos_bruto %>%
-  select(
-    revenda     = Revenda,
-    cnpj        = `CNPJ da Revenda`,
-    bairro      = Bairro,
-    produto     = Produto,
-    data_coleta = `Data da Coleta`,
-    valor_venda = `Valor de Venda`,
-    bandeira    = Bandeira
-  ) %>%
-  mutate(
-    data_coleta = as_date(data_coleta),  # o Excel devolve data-e-hora
-    cnpj        = str_trim(cnpj)         # tira espaços nas pontas, por segurança
-  )
-
-glimpse(precos)
-
-# Sobre o str_trim(): no CSV original da ANP o CNPJ vem com um espaço na
-# frente (" 06.331.431/0001-17"), e é por isso que o Tutorial 03 usa essa
-# limpeza. Neste arquivo .xlsx o readxl já entrega o valor sem o espaço, ou
-# seja, o str_trim() não muda nenhuma linha aqui. Mantemos assim mesmo: é
-# barato e protege o script se a ANP mudar o formato numa próxima exportação.
-#
-# O CNPJ continua sendo TEXTO, com pontos e barra. Ele é um identificador,
-# não uma quantidade: convertê-lo para número apagaria os zeros à esquerda.
-
-# UNIDADE DE OBSERVAÇÃO: posto (cnpj) x produto x data da coleta
-nrow(precos)                 # 2308 preços coletados
-n_distinct(precos$cnpj)      # 67 postos
-n_distinct(precos$produto)   # 5 produtos
-range(precos$data_coleta)    # 05/01/2026 a 24/06/2026
-
-
-# 3. Identificando a semana da coleta --------------------------------------
-
-## 3.1 floor_date(): de uma data para a semana a que ela pertence ----
-
-# Queremos semanas de DOMINGO a SÁBADO. A forma de representar uma semana
-# que menos dá problema é guardar a DATA DO DOMINGO que a inicia.
-#
-# floor_date(x, unit = "week") empurra qualquer data para o primeiro dia da
-# semana a que ela pertence. week_start diz qual é esse primeiro dia:
-#
-#   week_start = 7 -> domingo   (1 = segunda, 2 = terça, ..., 7 = domingo)
-#   week_start = 1 -> segunda   (padrão ISO, usado na Europa)
-precos <- precos %>%
-  mutate(semana_inicio = floor_date(data_coleta, unit = "week", week_start = 7))
-
-precos %>%
-  select(data_coleta, semana_inicio) %>%
-  head(10)
-
-# Escrevemos week_start = 7 mesmo sendo esse o padrão do lubridate. O padrão
-# vem de uma OPÇÃO GLOBAL (getOption("lubridate.week.start", 7)), que alguém
-# pode ter mudado no .Rprofile. Deixar explícito custa sete caracteres e
-# garante que o script produza o mesmo resultado em qualquer máquina.
-
-## 3.2 Conferindo que as semanas começam mesmo no domingo ----
-
-# wday() devolve o dia da semana. Todas as datas de início devem ser domingo.
-semanas_distintas <- sort(unique(precos$semana_inicio))
-
-length(semanas_distintas)   # 25 semanas
-head(semanas_distintas)
-table(wday(semanas_distintas, label = TRUE, week_start = 7))
-
-# A tabela acima tem de mostrar 25 em "dom" e 0 em todos os outros dias.
-# Se aparecer qualquer outro dia, o week_start está errado.
-
-# Um detalhe da base, que vale conhecer: a ANP não coleta em fim de semana.
-table(wday(precos$data_coleta, label = TRUE, week_start = 7))
-
-# Como todas as coletas caem entre segunda e sexta, neste caso específico
-# usar week_start = 1 formaria os mesmos grupos, só com outro rótulo. Em uma
-# base com coletas de sábado ou domingo isso NÃO seria verdade, e o mesmo
-# preço mudaria de semana conforme o argumento. É por isso que a escolha
-# precisa ser declarada, e não deixada por conta do padrão.
-
-## 3.3 Por que não usar week(), isoweek() ou epiweek() ----
-
-# Essas funções devolvem o NÚMERO da semana, e cada uma conta de um jeito:
-exemplo_datas <- as_date(c("2026-01-05", "2026-01-10", "2026-01-11", "2026-01-12"))
-
-tibble(
-  data     = exemplo_datas,
-  dia      = wday(exemplo_datas, label = TRUE, week_start = 7),
-  week     = week(exemplo_datas),      # semanas de 7 dias a partir de 1º/jan
-  isoweek  = isoweek(exemplo_datas),   # padrão ISO, semana começa na segunda
-  epiweek  = epiweek(exemplo_datas),   # padrão epidemiológico, começa no domingo
-  floor    = floor_date(exemplo_datas, "week", week_start = 7)
-)
-
-# Três problemas com o número da semana:
-#
-# 1. As três funções discordam entre si para a mesma data.
-# 2. O número recomeça em 1 todo ano. Numa base de dois anos, a "semana 3"
-#    de 2026 e a de 2027 viram o mesmo valor e se misturam numa agregação.
-# 3. O número não diz quando a semana foi. "Semana 14" não informa nada a
-#    quem lê a tabela.
-#
-# semana_inicio é uma DATA: ordena corretamente, nunca se repete entre anos
-# e mostra o período de cara. Use o número da semana só quando alguma regra
-# externa (um calendário oficial, um relatório já existente) exigir.
-
-
-# 4. Formato comprido e formato largo --------------------------------------
+# 2. Formato comprido e formato largo --------------------------------------
 #
 # A MESMA informação pode ser guardada de duas formas.
 #
-# COMPRIDO (long) - uma linha por posto-semana observado:
+# COMPRIDO (long) - uma linha por estado-ano:
 #
-#   cnpj                 semana_inicio   valor_venda
-#   06.331.431/0001-17   2026-01-04             5.89
-#   06.331.431/0001-17   2026-01-18             5.89
-#   10.978.518/0001-58   2026-01-04             5.79
-#   10.978.518/0001-58   2026-01-11             5.86
+#   estado    ano   taxa_desemprego
+#   CE       2023               8.4
+#   CE       2024               7.6
+#   CE       2025               7.1
+#   MA       2023               7.9
+#   ...
 #
-# LARGO (wide) - o PAINEL: uma linha por posto, uma coluna por semana:
+# LARGO (wide) - uma linha por estado, uma coluna por ano:
 #
-#   cnpj                 2026-01-04   2026-01-11   2026-01-18
-#   06.331.431/0001-17         5.89           NA         5.89
-#   10.978.518/0001-58         5.79         5.86         5.86
+#   estado   ano_2023   ano_2024   ano_2025
+#   CE            8.4        7.6        7.1
+#   MA            7.9        7.2        6.8
+#   ...
 #
-# (os valores acima são reais; você vai vê-los na seção 5.3)
+# Nenhum número mudou: o 7.6 do Ceará em 2024 está nas duas tabelas. O que
+# mudou foi o LUGAR onde o ano aparece. No formato comprido o ano é uma
+# COLUNA, com os valores 2023, 2024 e 2025; no largo, ele virou parte do
+# NOME das colunas.
 #
-# Repare no NA: no formato largo aparece uma célula para TODA combinação
-# posto x semana, inclusive as que não existiam no formato comprido. Aquele
-# posto não foi visitado naquela semana. Voltaremos a isso na seção 5.5.
+# Com isso muda também a UNIDADE DE OBSERVAÇÃO, isto é, o que cada linha
+# representa:
 #
-# Nenhum dos dois formatos é "o certo". O que muda é a unidade de observação
-# e, com ela, o que fica fácil de fazer:
+#   COMPRIDO -> cada linha é um estado em um ano   (estado x ano)
+#   LARGO    -> cada linha é um estado             (estado)
 #
-#   COMPRIDO -> é o formato de TRABALHO. group_by(), filter(), lag() e
-#               ggplot() precisam que "semana" seja uma COLUNA, não um nome
-#               de coluna. É o formato que o tidyverse espera.
+# Nenhum dos dois formatos é "o certo":
 #
-#   LARGO    -> é o formato de LEITURA. Mostra a trajetória de cada posto em
-#               uma linha, deixa os buracos de cobertura visíveis a olho nu e
-#               é o que se entrega a quem vai abrir no Excel.
+#   COMPRIDO -> é o formato de TRABALHO. filter(), group_by(), summarise()
+#               e ggplot() esperam que o ano seja uma coluna.
 #
-# As duas funções:
+#   LARGO    -> é o formato de LEITURA. Mostra a trajetória de cada estado
+#               em uma linha, como numa tabela de relatório ou de Excel.
+#
+# As duas funções deste tutorial:
 #
 #   pivot_wider()  comprido -> largo   (menos linhas, mais colunas)
 #   pivot_longer() largo -> comprido   (mais linhas, menos colunas)
-#
-# Em toda passagem de um formato para o outro a UNIDADE DE OBSERVAÇÃO muda.
-# Confira sempre o número de linhas antes e depois.
 
 
-# 5. pivot_wider(): montando o painel posto x semana -----------------------
-#
-# ATENÇÃO à regra que governa esta seção inteira:
-#
-#   no pivot_wider(), TODA coluna que não for names_from nem values_from é
-#   tratada como IDENTIFICADORA, ou seja, entra na definição da linha.
-#
-# Queremos uma linha por POSTO. Então, antes de girar a base, precisamos
-# resolver duas colunas que atrapalham: produto e data_coleta.
+# 3. De comprido para largo: pivot_wider() ---------------------------------
 
-## 5.1 O produto: o erro das colunas-lista ----
+## 3.1 Simulando a base comprida ----
 
-# A base tem 5 produtos. O par posto x semana, portanto, NÃO identifica uma
-# linha: numa mesma visita a ANP coleta gasolina, etanol, diesel...
-precos %>%
-  count(cnpj, semana_inicio) %>%
-  filter(n > 1) %>%
-  nrow()   # 629 pares repetidos, de 631
-
-# Se girarmos assim mesmo, o pivot_wider() encontra vários valores para a
-# mesma célula. Rode e leia o aviso.
-teste_com_todos_produtos <- precos %>%
-  select(cnpj, semana_inicio, valor_venda) %>%
-  pivot_wider(names_from = semana_inicio, values_from = valor_venda)
-
-# O aviso é "Values are not uniquely identified; output will contain
-# list-cols". Como ele precisa de UM valor por célula e achou até cinco, ele
-# guardou todos dentro da célula, em forma de lista.
-class(teste_com_todos_produtos[[2]])   # "list", e não "numeric"
-
-# Uma coluna-lista não é um número: nenhuma conta funciona com ela.
-# mean(teste_com_todos_produtos[[2]])  # descomente para ver o erro
-#
-# Existe o atalho values_fn = mean, que resumiria os cinco produtos em um
-# número - mas isso seria a média de gasolina com diesel e etanol, que não
-# significa nada. A correção certa aqui não é resumir: é FILTRAR um produto.
-precos_gasolina <- precos %>%
-  filter(produto == "GASOLINA")
-
-nrow(precos_gasolina)                    # 631 coletas
-n_distinct(precos_gasolina$cnpj)         # 67 postos
-n_distinct(precos_gasolina$semana_inicio)  # 25 semanas
-
-# Agora sim: posto x semana identifica cada linha (esperado: 0 linhas).
-# Esta é a verificação de chave que se faz em QUALQUER painel, antes de
-# qualquer coisa - a combinação unidade x tempo não pode se repetir.
-precos_gasolina %>%
-  count(cnpj, semana_inicio) %>%
-  filter(n > 1)
-
-## 5.2 A data da coleta: a coluna que quebra o painel em silêncio ----
-
-# data_coleta varia DENTRO de cada posto: é uma data diferente a cada visita.
-# Se ela ficar na base, vira coluna identificadora e cada visita gera uma
-# linha própria - o painel simplesmente não se forma.
-teste_com_data <- precos_gasolina %>%
-  select(cnpj, revenda, data_coleta, semana_inicio, valor_venda) %>%
-  pivot_wider(names_from = semana_inicio, values_from = valor_venda)
-
-nrow(teste_com_data)   # 631 linhas, e não 67
-
-# Nenhum aviso apareceu. Este é o erro mais traiçoeiro do pivot_wider():
-# o resultado sai, parece uma tabela, e está errado.
-#
-# Como saber quais colunas podem ficar? A regra é: só entram as que são
-# CONSTANTES dentro da unidade. revenda, bairro e bandeira descrevem o posto
-# e não mudam de uma semana para outra; data_coleta muda. Conferindo
-# (esperado: 0 linhas):
-precos_gasolina %>%
-  distinct(cnpj, revenda, bairro, bandeira) %>%
-  count(cnpj) %>%
-  filter(n > 1)
-
-# Duas formas de resolver, equivalentes:
-#
-#   a) select() deixando data_coleta de fora, como faremos a seguir;
-#   b) id_cols = c(cnpj, revenda, bairro, bandeira) dentro do pivot_wider(),
-#      declarando explicitamente quem identifica a linha e ignorando o resto.
-#
-# id_cols é mais seguro em bases largas, porque não depende de você lembrar
-# de tirar cada coluna problemática.
-
-## 5.3 O painel ----
-
-# Um último ajuste antes de girar: os nomes das colunas.
-#
-# Nomes de coluna são sempre TEXTO. Passando semana_inicio (uma data) direto,
-# o R criaria colunas chamadas `2026-01-04`, que exigem crase toda vez que
-# forem citadas. Criamos um rótulo de texto, com "_" no lugar do "-", e
-# usamos names_prefix para marcar que aquilo é uma semana.
-#
-# O formato "%Y_%m_%d" (ano_mês_dia) foi escolhido porque ordena
-# corretamente na ordem alfabética - "2026_02_01" vem depois de
-# "2026_01_25", o que "01_02_2026" não garantiria.
-#
-#   MUDANÇA DE UNIDADE:
-#     antes:  posto x semana   (631 linhas)
-#     depois: posto            ( 67 linhas)
-
-painel_gasolina <- precos_gasolina %>%
-  mutate(semana_rotulo = format(semana_inicio, "%Y_%m_%d")) %>%
-  select(cnpj, revenda, bairro, bandeira, semana_rotulo, valor_venda) %>%
-  pivot_wider(
-    names_from   = semana_rotulo,
-    values_from  = valor_venda,
-    names_prefix = "sem_",
-    names_sort   = TRUE      # colunas em ordem cronológica
-  )
-
-dim(painel_gasolina)   # 67 linhas x 29 colunas (4 de identificação + 25 semanas)
-names(painel_gasolina)[1:8]
-
-# Olhando as cinco primeiras semanas de cinco postos:
-painel_gasolina %>%
-  select(cnpj, 5:9) %>%
-  head(5)
-
-# Sobre names_sort = TRUE: sem esse argumento, o pivot_wider() cria as
-# colunas na ordem em que os valores aparecem na base. Se a base não
-# estivesse ordenada por data, as semanas sairiam fora de ordem - e ninguém
-# repara nisso olhando uma tabela de 29 colunas. Num painel, a ordem do tempo
-# é parte da informação.
-
-## 5.4 Conferindo o painel ----
-
-# Quatro conferências, que valem para qualquer painel:
-
-# 1. Uma linha por unidade: o número de linhas tem de bater com o número de
-#    postos distintos do formato comprido.
-nrow(painel_gasolina) == n_distinct(precos_gasolina$cnpj)
-
-# 2. A chave da nova base é única (esperado: 0 linhas).
-painel_gasolina %>%
-  count(cnpj) %>%
-  filter(n > 1)
-
-# 3. Uma coluna por período: o número de colunas de semana tem de bater com
-#    o número de semanas distintas.
-painel_gasolina %>%
-  select(starts_with("sem_")) %>%
-  ncol()
-
-n_distinct(precos_gasolina$semana_inicio)   # os dois devem dar 25
-
-# 4. Nada sumiu: a soma das células preenchidas tem de bater com o número de
-#    linhas do formato comprido.
-sum(!is.na(painel_gasolina %>% select(starts_with("sem_"))))
-nrow(precos_gasolina)   # os dois devem dar 631
-
-## 5.5 O NA do painel desbalanceado NÃO é zero ----
-
-# O painel tem 67 x 25 = 1675 células, e só 631 estão preenchidas.
-67 * 25
-sum(is.na(painel_gasolina %>% select(starts_with("sem_"))))   # 1044 vazias
-
-# Menos de 40% preenchido:
-round(100 * 631 / 1675, 1)
-
-# Isso NÃO é defeito da base. A ANP faz rodízio: visita cerca de 29 postos
-# por semana, não os 67. Cada célula vazia significa "este posto não foi
-# visitado nesta semana" - e não "o preço foi zero", nem "o posto fechou".
-#
-# Preencher com values_fill = 0 criaria 1044 preços zerados e destruiria
-# qualquer estatística. O NA aqui está correto e deve permanecer.
-#
-# Um painel assim se chama DESBALANCEADO: as unidades não são observadas nos
-# mesmos períodos. Quantas semanas cada posto tem:
-precos_gasolina %>%
-  count(cnpj, name = "semanas_observadas") %>%
-  summarise(
-    minimo  = min(semanas_observadas),
-    mediana = median(semanas_observadas),
-    maximo  = max(semanas_observadas)
-  )
-
-# De 1 a 22 semanas, com mediana 8. Um posto observado uma única vez não
-# sustenta nenhuma afirmação sobre trajetória de preço, e qualquer
-# comparação entre postos precisa levar isso em conta.
-#
-# Quantos postos a ANP visitou em cada semana:
-precos_gasolina %>%
-  count(semana_inicio, name = "postos_visitados") %>%
-  print(n = 25)
-
-# Repare nas semanas com 3, 5, 11 e 13 postos. Uma média de preço calculada
-# nessas semanas descreve um punhado de postos, não a cidade - e a variação
-# de uma semana para a outra pode ser só mudança da amostra.
-
-
-# 6. pivot_longer(): de volta ao formato comprido --------------------------
-
-## 6.1 A volta ----
-
-# Os argumentos são:
-#
-#   cols      = quais colunas devem ser empilhadas
-#   names_to  = nome da NOVA coluna que recebe os NOMES das colunas
-#   values_to = nome da NOVA coluna que recebe os VALORES
-#
-# Usamos starts_with("sem_") em cols: é justamente para isso que serve o
-# prefixo criado na seção 5.3. Listar as 25 colunas na mão funcionaria, mas
-# quebraria assim que a base ganhasse uma semana nova.
-#
-# names_prefix = "sem_" no pivot_longer() faz o caminho inverso: REMOVE o
-# prefixo do texto antes de guardá-lo na coluna semana_rotulo.
-#
-#   MUDANÇA DE UNIDADE:
-#     antes:  posto            (  67 linhas)
-#     depois: posto x semana   (1675 linhas, contando as células vazias)
-
-painel_comprido <- painel_gasolina %>%
-  pivot_longer(
-    cols         = starts_with("sem_"),
-    names_to     = "semana_rotulo",
-    values_to    = "valor_venda",
-    names_prefix = "sem_"
-  )
-
-nrow(painel_comprido)                      # 1675 = 67 x 25
-sum(is.na(painel_comprido$valor_venda))    # 1044
-
-# values_drop_na = TRUE descarta as células vazias na hora de empilhar,
-# devolvendo exatamente a base de onde partimos.
-painel_comprido <- painel_gasolina %>%
-  pivot_longer(
-    cols           = starts_with("sem_"),
-    names_to       = "semana_rotulo",
-    values_to      = "valor_venda",
-    names_prefix   = "sem_",
-    values_drop_na = TRUE
-  ) %>%
-  mutate(semana_inicio = ymd(semana_rotulo))   # de volta a DATA
-
-nrow(painel_comprido) == nrow(precos_gasolina)   # TRUE (631)
-glimpse(painel_comprido)
-
-# Note o ymd(): o rótulo voltou como TEXTO ("2026_01_04"). Para ordenar,
-# filtrar por período ou calcular diferenças de tempo, ele precisa virar data
-# de novo. Como texto, a ordenação funcionaria por acaso neste formato, mas
-# a subtração de datas da seção 6.2 não funcionaria de jeito nenhum.
-#
-# Cuidado: values_drop_na = TRUE APAGA linhas. Use quando o NA significa
-# "esta combinação não existe" (o nosso caso: visita que não houve). Se
-# significasse "houve visita, mas o preço não foi anotado", você estaria
-# jogando fora justamente as observações que precisaria investigar.
-
-## 6.2 Conferindo que a ida e a volta preservaram os dados ----
-
-# Não basta o número de linhas bater: os VALORES também precisam bater.
-# Ordenamos as duas bases do mesmo jeito e comparamos as colunas em comum.
-base_original <- precos_gasolina %>%
-  select(cnpj, semana_inicio, valor_venda) %>%
-  arrange(cnpj, semana_inicio)
-
-base_ida_e_volta <- painel_comprido %>%
-  select(cnpj, semana_inicio, valor_venda) %>%
-  arrange(cnpj, semana_inicio)
-
-# all.equal() responde TRUE ou descreve as diferenças encontradas.
-all.equal(base_original, base_ida_e_volta)
-
-# Conferência complementar: nenhum par posto x semana pode ter aparecido nem
-# sumido. Montamos a chave dos dois lados colando as duas colunas e
-# comparamos os conjuntos com setdiff(), que devolve o que está no primeiro
-# e não está no segundo. Esperado nos dois sentidos: character(0).
-chave_original    <- paste(base_original$cnpj, base_original$semana_inicio)
-chave_ida_e_volta <- paste(base_ida_e_volta$cnpj, base_ida_e_volta$semana_inicio)
-
-setdiff(chave_original, chave_ida_e_volta)
-setdiff(chave_ida_e_volta, chave_original)
-
-# Comparamos os dois sentidos porque um setdiff() sozinho não detecta pares
-# que apareceram a mais do outro lado.
-
-## 6.3 Por que o formato comprido é o de trabalho: a variação semanal ----
-
-# Aqui fica claro para que serve voltar. Queremos, para cada posto, o quanto
-# o preço mudou em relação à coleta anterior. lag() pega o valor da linha
-# anterior - e só faz sentido depois de AGRUPAR pela unidade e ORDENAR pelo
-# tempo. Sem group_by(cnpj), o lag() do primeiro posto pegaria o último
-# preço do posto anterior, sem avisar.
-variacao_semanal <- painel_comprido %>%
-  arrange(cnpj, semana_inicio) %>%
-  group_by(cnpj) %>%
-  mutate(
-    preco_anterior  = lag(valor_venda),
-    semana_anterior = lag(semana_inicio),
-    variacao        = valor_venda - preco_anterior,
-    semanas_de_gap  = as.numeric(semana_inicio - semana_anterior) / 7
-  ) %>%
-  ungroup()
-
-variacao_semanal %>%
-  select(revenda, semana_inicio, valor_venda, preco_anterior, variacao, semanas_de_gap) %>%
-  head(10)
-
-# ATENÇÃO METODOLÓGICA. Em um painel desbalanceado, "linha anterior" não
-# quer dizer "semana anterior". Veja a distância que o lag() realmente
-# atravessou em cada caso:
-variacao_semanal %>%
-  count(semanas_de_gap)
-
-# Só 381 das 564 diferenças comparam semanas consecutivas. As outras pulam
-# de 2 a 13 semanas, e chamá-las de "variação semanal" seria errado: elas
-# acumulam a variação de vários meses.
-#
-# O tratamento correto é restringir o cálculo aos pares realmente
-# consecutivos, e dizer quantos ficaram de fora:
-variacao_semanal %>%
-  filter(semanas_de_gap == 1) %>%
-  summarise(
-    n_variacoes    = n(),
-    variacao_media = mean(variacao),
-    variacao_min   = min(variacao),
-    variacao_max   = max(variacao)
-  )
-
-# A gasolina subiu, em média, cerca de R$ 0,05 por litro de uma semana para
-# a seguinte. Esse número descreve as 381 transições consecutivas
-# observadas, e não "os postos de Teresina" - a ANP não sorteia quem visita.
-#
-# Nada disso seria possível no formato largo: lag(), group_by() e a
-# subtração de datas precisam que a semana seja uma COLUNA.
-
-
-# 7. Exportando ------------------------------------------------------------
-
-# O XLSX guarda várias tabelas, uma por aba. Entregamos as duas versões: o
-# painel largo, para leitura, e o comprido, para quem for continuar a
-# análise.
-write_xlsx(
-  list(
-    painel_largo   = painel_gasolina,
-    painel_comprido = painel_comprido,
-    variacao_semanal = variacao_semanal %>% filter(semanas_de_gap == 1)
-  ),
-  "04_pivot/painel_gasolina_teresina.xlsx"
+# tribble() monta uma tabela linha por linha. A primeira linha, com "~",
+# traz os nomes das colunas; cada linha seguinte é uma observação.
+# Taxa de desemprego em % da força de trabalho (valores fictícios).
+desemprego_comprido <- tribble(
+  ~estado, ~ano, ~taxa_desemprego,
+  "CE",    2023,  8.4,
+  "CE",    2024,  7.6,
+  "CE",    2025,  7.1,
+  "MA",    2023,  7.9,
+  "MA",    2024,  7.2,
+  "MA",    2025,  6.8,
+  "PI",    2023,  8.1,
+  "PI",    2024,  7.5,
+  "PI",    2025,  6.6
 )
 
-list.files("04_pivot")
+desemprego_comprido
 
-# Em um painel, a aba larga é a que as pessoas leem, mas a comprida é a que
-# você deve guardar para trabalhar. Ela não tem células vazias inventadas e
-# aceita uma semana nova sem mudar de estrutura.
+# UNIDADE DE OBSERVAÇÃO: estado x ano
+# 3 estados x 3 anos = 9 linhas
+dim(desemprego_comprido)   # 9 linhas x 3 colunas
 
+## 3.2 Conferindo a chave antes de girar ----
 
-# 8. Problemas comuns ------------------------------------------------------
+# No formato largo, cada combinação estado x ano vira UMA célula. Por isso,
+# antes de girar, conferimos que essa combinação não se repete na base
+# comprida (esperado: 0 linhas).
+desemprego_comprido %>%
+  count(estado, ano) %>%
+  filter(n > 1)
+
+# Se algum par estado x ano aparecesse duas vezes, o pivot_wider() teria
+# dois valores para a mesma célula e não saberia qual escolher. Veja o
+# problema comum nº 1, na seção 5.
+
+## 3.3 Girando ----
+
+# Os dois argumentos principais:
 #
-# 1. "Values are not uniquely identified; output will contain list-cols"
-#    A combinação unidade x tempo se repete na base. Ou falta filtrar uma
-#    dimensão (foi o nosso caso: o produto), ou há duplicata de verdade.
-#    Investigue com count(unidade, tempo) %>% filter(n > 1) ANTES de usar
-#    values_fn para abafar o aviso.
+#   names_from  = de qual coluna saem os NOMES das novas colunas   (ano)
+#   values_from = de qual coluna saem os VALORES das células        (taxa_desemprego)
 #
-# 2. O painel saiu com uma linha por observação, e não uma por unidade
-#    Sobrou uma coluna que varia dentro da unidade (no nosso caso,
-#    data_coleta) e virou identificadora. Não há aviso. Use id_cols = para
-#    declarar quem identifica a linha.
+# Toda coluna que não for names_from nem values_from fica como está e passa
+# a identificar a linha. Aqui só sobra estado: uma linha por estado.
 #
-# 3. As colunas de período saíram fora de ordem
-#    Use names_sort = TRUE, e um rótulo de data que ordene alfabeticamente
-#    (ano_mês_dia).
+# names_prefix = "ano_" coloca um começo de texto no nome de cada coluna
+# nova. Sem ele, as colunas se chamariam `2023`, `2024` e `2025`. Nomes que
+# começam com número funcionam, mas exigem crase toda vez que forem citados
+# (desemprego_largo$`2023`), o que é fácil de esquecer.
 #
-# 4. Os nomes das colunas ficaram com "-" e exigem crase
-#    Troque o separador no format() e use names_prefix para dar um começo de
-#    texto ao nome.
-#
-# 5. Apareceram muitos NA que não existiam antes
-#    É o normal em painel desbalanceado. Só use values_fill = 0 se a
-#    ausência significar mesmo zero - o que quase nunca é o caso em preços.
-#
-# 6. pivot_longer() devolveu mais linhas do que a base original
-#    São as células vazias virando linhas. Use values_drop_na = TRUE.
-#
-# 7. Depois do pivot_longer(), a coluna de período é texto e não ordena
-#    Converta de volta com ymd() (ou as_date()).
-#
-# 8. lag() devolveu valores estranhos na primeira linha de cada unidade
-#    Faltou group_by(unidade) antes, ou arrange(unidade, tempo). Sem os
-#    dois, lag() atravessa a fronteira entre unidades sem avisar.
+#   MUDANÇA DE UNIDADE:
+#     antes:  estado x ano   (9 linhas)
+#     depois: estado         (3 linhas)
 
-
-# =============================================================================
-# EXERCÍCIO PRÁTICO
-# =============================================================================
-#
-# As duas bases abaixo já vêm prontas: basta RODAR os dois blocos. Seu
-# trabalho é só girar cada uma para o outro formato.
-
-
-## Exercício (a) - de COMPRIDO para LARGO ----
-
-# Rode este bloco. Ele cria etanol_comprido, com os preços do etanol:
-# uma linha por posto-semana, 582 linhas.
-etanol_comprido <- precos %>%
-  filter(produto == "ETANOL") %>%
-  mutate(semana = format(semana_inicio, "%Y_%m_%d")) %>%
-  select(cnpj, semana, valor_venda)
-
-etanol_comprido
-dim(etanol_comprido)
-
-# SUA TAREFA: use pivot_wider() para criar etanol_largo, com uma linha por
-# posto e uma coluna por semana. Use names_prefix = "sem_" e
-# names_sort = TRUE, como na seção 5.3.
-#
-# Depois responda, em um comentário: quantas células ficaram vazias e o que
-# cada uma delas significa?
-
-# SUA RESPOSTA AQUI
-
-
-
-## Exercício (b) - de LARGO para COMPRIDO ----
-
-# Rode este bloco. Ele cria coletas_largo, com o número de coletas da ANP
-# por bandeira em cada mês: 5 linhas (uma por bandeira) e 6 colunas de mês.
-coletas_largo <- precos %>%
-  mutate(mes = format(data_coleta, "%Y_%m")) %>%
-  count(bandeira, mes) %>%
+desemprego_largo <- desemprego_comprido %>%
   pivot_wider(
-    names_from   = mes,
-    values_from  = n,
-    names_prefix = "mes_",
-    values_fill  = 0
+    names_from   = ano,
+    values_from  = taxa_desemprego,
+    names_prefix = "ano_"
   )
 
-coletas_largo
+desemprego_largo
 
-# SUA TAREFA: use pivot_longer() para criar coletas_comprido, com uma linha
-# por bandeira-mês e as colunas bandeira, mes e n_coletas. Empilhe as
-# colunas com starts_with("mes_") e use names_prefix = "mes_" para tirar o
-# prefixo do rótulo, como na seção 6.1.
+## 3.4 Conferindo o resultado ----
+
+# 1. Uma linha por estado: os dois números devem ser 3.
+nrow(desemprego_largo)
+n_distinct(desemprego_comprido$estado)
+
+# 2. Uma coluna por ano, além da coluna estado.
+names(desemprego_largo)
+
+# 3. Nenhuma célula vazia (esperado: 0). Como cada estado tem os três anos
+#    na base comprida, todas as 3 x 3 = 9 células devem estar preenchidas.
+sum(is.na(desemprego_largo))
+
+
+# 4. De largo para comprido: pivot_longer() --------------------------------
+
+## 4.1 Simulando a base larga ----
+
+# É assim que muitas tabelas chegam do IBGE, de relatórios de empresas ou de
+# planilhas de Excel: uma linha por unidade e um ano em cada coluna.
+# Receita em R$ milhões (valores fictícios).
+receita_largo <- tribble(
+  ~empresa,    ~receita_2022, ~receita_2023, ~receita_2024,
+  "Empresa A",           120,           135,           150,
+  "Empresa B",            80,            78,            90,
+  "Empresa C",           200,           210,           205,
+  "Empresa D",            45,            60,            72
+)
+
+receita_largo
+
+# UNIDADE DE OBSERVAÇÃO: empresa
+dim(receita_largo)   # 4 linhas x 4 colunas
+
+## 4.2 Girando ----
+
+# Os três argumentos principais:
 #
-# Para conferir: o resultado deve ter 30 linhas, e a soma de n_coletas deve
-# dar 2308 - o total de preços coletados na base.
+#   cols      = quais colunas devem ser empilhadas
+#   names_to  = nome da NOVA coluna que recebe os NOMES das colunas empilhadas
+#   values_to = nome da NOVA coluna que recebe os VALORES
+#
+# Em cols usamos starts_with("receita_"), que pega todas as colunas cujo
+# nome começa com "receita_". É mais seguro do que digitar as três, e
+# continua funcionando se a base ganhar um ano novo.
+#
+# names_prefix = "receita_" faz aqui o caminho inverso do que fez no
+# pivot_wider(): RETIRA o prefixo, para que a coluna ano receba "2022" e não
+# "receita_2022".
+#
+#   MUDANÇA DE UNIDADE:
+#     antes:  empresa         ( 4 linhas)
+#     depois: empresa x ano   (12 linhas = 4 empresas x 3 anos)
+
+receita_comprido <- receita_largo %>%
+  pivot_longer(
+    cols         = starts_with("receita_"),
+    names_to     = "ano",
+    values_to    = "receita",
+    names_prefix = "receita_"
+  )
+
+receita_comprido
+
+## 4.3 O ano voltou como TEXTO ----
+
+# Repare no tipo da coluna ano no resultado acima: <chr>, ou seja, texto. Ela
+# foi montada a partir de NOMES de colunas, e nome de coluna é sempre texto.
+class(receita_comprido$ano)   # "character"
+
+# Como texto, "2022" não é um número: não dá para fazer conta com ele, e um
+# filtro como ano > 2022 compararia letras, e não anos. Convertemos:
+receita_comprido <- receita_comprido %>%
+  mutate(ano = as.numeric(ano))
+
+class(receita_comprido$ano)   # "numeric"
+receita_comprido
+
+## 4.4 Conferindo o resultado ----
+
+# 1. Uma linha por empresa x ano: 4 empresas x 3 anos = 12 linhas.
+nrow(receita_comprido)
+
+# 2. A chave nova não se repete (esperado: 0 linhas).
+receita_comprido %>%
+  count(empresa, ano) %>%
+  filter(n > 1)
+
+# 3. Nenhum valor mudou: a soma das receitas é a mesma nos dois formatos.
+#    Os dois números devem dar 1445.
+sum(receita_comprido$receita)
+sum(receita_largo %>% select(starts_with("receita_")))
+
+## 4.5 Para que serve o formato comprido ----
+
+# Com o ano em uma coluna, perguntas sobre o tempo viram um group_by(). Por
+# exemplo, a receita somada das quatro empresas em cada ano.
+#
+#   MUDANÇA DE UNIDADE (aqui é uma agregação, e não um giro):
+#     antes:  empresa x ano   (12 linhas)
+#     depois: ano             ( 3 linhas)
+receita_comprido %>%
+  group_by(ano) %>%
+  summarise(receita_total = sum(receita))
+
+# No formato largo o ano está espalhado em três nomes de coluna, e o
+# group_by() não tem uma coluna ano onde se apoiar.
+
+
+# 5. Problemas comuns ------------------------------------------------------
+#
+# 1. "Values are not uniquely identified; output will contain list-cols"
+#    Aviso do pivot_wider(): a combinação unidade x tempo se repete na base
+#    comprida, e uma mesma célula recebeu mais de um valor. Investigue com
+#    count(unidade, tempo) %>% filter(n > 1), como na seção 3.2.
+#
+# 2. Apareceram NA no formato largo
+#    Faltava aquela combinação na base comprida (por exemplo, um estado sem
+#    dado em um dos anos). O NA quer dizer "não observado", e não zero. Não
+#    preencha com 0 sem uma razão de verdade.
+#
+# 3. Colunas com nomes como `2023`, que exigem crase
+#    Use names_prefix no pivot_wider() (seção 3.3).
+#
+# 4. A coluna ano saiu com valores como "receita_2022"
+#    Faltou names_prefix no pivot_longer() (seção 4.2).
+#
+# 5. Depois do pivot_longer(), o ano é texto
+#    É o normal: ele veio de nomes de coluna. Converta com as.numeric()
+#    (seção 4.3).
+
+
+# =============================================================================
+# EXERCÍCIO PRÁTICO - DESFAZENDO OS GIROS
+# =============================================================================
+#
+# No tutorial você girou cada base para o outro formato. Agora faça o
+# caminho de volta: transforme cada base girada na base de onde ela saiu.
+#
+# Antes de começar, rode o script inteiro até aqui: o exercício usa os
+# objetos desemprego_largo (seção 3) e receita_comprido (seção 4).
+#
+# Cada item termina com uma linha de conferência comentada. Depois de
+# escrever sua resposta, apague o "#" do início dessa linha e rode-a.
+# all.equal() compara a sua base com a original e devolve:
+#
+#   TRUE     -> as duas bases são iguais. Pronto!
+#   um texto -> a descrição do que está diferente. Leia, corrija e rode de
+#               novo. Dois exemplos:
+#               'Component "ano": target is character, current is numeric'
+#                  -> o ano da sua base ficou como texto;
+#               'Names: 3 string mismatches'
+#                  -> os nomes das colunas não batem com os da original.
+
+
+## Exercício (a) - desemprego: de LARGO de volta para COMPRIDO ----
+
+# Ponto de partida: desemprego_largo, com 3 linhas (seção 3.3).
+desemprego_largo
+
+# SUA TAREFA: use pivot_longer() para criar desemprego_de_volta, com uma
+# linha por estado-ano e as colunas estado, ano e taxa_desemprego, igual a
+# desemprego_comprido. Siga as seções 4.2 e 4.3:
+#
+#   - em cols, pegue as colunas que começam com "ano_";
+#   - use names_prefix para tirar o "ano_" do ano;
+#   - converta o ano de volta para número.
 
 # SUA RESPOSTA AQUI
 
+
+
+# Conferência (esperado: TRUE):
+# all.equal(desemprego_de_volta, desemprego_comprido)
+
+
+## Exercício (b) - receita: de COMPRIDO de volta para LARGO ----
+
+# Ponto de partida: receita_comprido, com 12 linhas (seção 4.3).
+receita_comprido
+
+# SUA TAREFA: use pivot_wider() para criar receita_de_volta, com uma linha
+# por empresa e as colunas receita_2022, receita_2023 e receita_2024, igual
+# a receita_largo. Siga a seção 3.3 e pense: qual names_prefix recria os
+# nomes originais das colunas?
+
+# SUA RESPOSTA AQUI
+
+
+
+# Conferência (esperado: TRUE):
+# all.equal(receita_de_volta, receita_largo)
 
 
 # =============================================================================
