@@ -14,6 +14,7 @@ Economia. Cada pasta numerada é um tutorial independente, com um script
 | 04 | [`04_pivot/`](04_pivot/04_pivot.R) | Formato comprido e formato largo com duas bases pequenas simuladas, de comprido para largo com `pivot_wider()`, de largo para comprido com `pivot_longer()`, `names_prefix`, ano que volta como texto, mudança da unidade de observação e conferência da chave e dos valores depois de cada giro |
 | 05 | [`05_geobr/`](05_geobr/05_geobr.R) | Dados espaciais oficiais do Brasil com `read_state()`, `read_municipality()` e `read_schools()` do geobr, objetos sf, mapas de polígonos e de pontos com `geom_sf()`, escolas em atividade e contagem de escolas por município |
 | 06 | [`06_sidrar_geobr/`](06_sidrar_geobr/06_sidrar_geobr.R) | Juntar dado e mapa: população dos municípios do Maranhão no SIDRA com `get_sidra()` e malha municipal com `read_municipality()`, chave pelo código do IBGE, tipos da chave e `left_join()` com conferências (`anyDuplicated()`, `anti_join()`), mapa coroplético com `aes(fill = ...)` e faixas de valores com `cut()` |
+| 07 | [`07_joins/`](07_joins/07_joins.R) | Introdução aos joins do dplyr com bases pequenas simuladas: chave e unidade de observação, `left_join()`, `inner_join()`, `full_join()`, `semi_join()` e `anti_join()`, correspondências ausentes e risco de multiplicação de linhas por chaves repetidas |
 
 Novos tutoriais serão adicionados a este repositório ao longo do curso.
 

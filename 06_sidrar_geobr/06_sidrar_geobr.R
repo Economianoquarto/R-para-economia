@@ -340,10 +340,54 @@ ggplot(mapa_populacao_ma) +
 #      Selecione e renomeie as colunas como na seção 3.2 e confirme que o
 #      código não se repete.
 #
+
+populacao_pi_sidra <- get_sidra(
+  x = 6579,
+  variable = 9324,
+  period = "2026",
+  geo = "City",
+  geo.filter = list("State" = 22)
+)
+
+nrow(populacao_pi_sidra) # 224 municípios
+glimpse(populacao_pi_sidra)
+
+populacao_pi <- populacao_pi_sidra %>%
+  select(
+    `Município (Código)`,
+    `Município`,
+    Ano,
+    Valor
+  ) %>%
+  rename(
+    code_muni = `Município (Código)`,
+    municipio = `Município`,
+    ano = Ano,
+    populacao = Valor
+  ) %>%
+  mutate(
+    code_muni = as.character(code_muni),
+    ano = as.integer(ano)
+  )
+
+head(populacao_pi)
+anyDuplicated(populacao_pi$code_muni) # 0: nenhum código repetido
+
 #   b) Baixe a malha dos municípios do Piauí com read_municipality() e passe
 #      o code_muni para texto.
 #      Para conferir: 224 municípios.
 #
+
+municipios_pi <- read_municipality(year = 2022, code_muni = "PI")
+
+nrow(municipios_pi)                    # 224 municípios
+anyDuplicated(municipios_pi$code_muni) # 0: nenhum código repetido
+
+municipios_pi <- municipios_pi %>%
+  mutate(code_muni = as.character(code_muni))
+
+class(municipios_pi$code_muni) # "character"
+
 #   c) Junte as duas bases com left_join(), com a malha à esquerda, e faça as
 #      conferências da seção 5.1.
 #      Responda em um comentário: o join manteve as 224 linhas? Ficou algum
@@ -357,9 +401,6 @@ ggplot(mapa_populacao_ma) +
 #      Responda em um comentário: no Piauí, essas faixas separam bem os
 #      municípios ou quase todos caem na mesma faixa? Se a maioria ficou
 #      junta, proponha cortes melhores para o Piauí e refaça o mapa.
-
-# SUA RESPOSTA AQUI
-
 
 
 # =============================================================================
